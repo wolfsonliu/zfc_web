@@ -1,0 +1,48 @@
+{% extends "zfc/basic.html" %}
+{% block content %}
+
+<div class="container">
+
+<table class="table table-borderless">
+  <tbody>
+    <tr>
+      <th scope="row">Job ID</th>
+      <td>{{ job_id }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Result Page</th>
+      <td><a href="{{ result_url }}">{{ result_url }}</a></td>
+    </tr>
+    <tr>
+      <th scope="row">Refresh Time</th>
+      <td>This page will be automatically refreshed. Refreshed at {{ date }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Job Status</th>
+      <td>{{ job_status }}</td>
+    </tr>
+    <tr>
+      <th scope="row">File Status</th>
+      <td>{{ file_status }}</td>
+    </tr>
+  </tbody>
+</table>
+
+{% if error_message %}
+<div class="alert alert-danger" role="alert">
+  {{ error_message }}
+</div>
+{% else %}
+<!-- Auto refresh page -->
+<script>
+  window.setTimeout(
+    function () {
+      location.href = "{{ result_url }}";
+    },
+    60000
+  ); // refresh/redirect after 60 seconds.
+</script>
+{% endif %}
+
+</div>
+{% endblock %}
