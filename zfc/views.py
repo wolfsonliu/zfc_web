@@ -90,79 +90,102 @@ def job(request, job_id):
         except Job.DoesNotExist:
             raise Http404('Job does not exist.')
 
+    render_dict = {
+        'job_id': thejob.job_id,
+        'submit_date': thejob.submit_date.strftime('%Y-%m-%d %H:%M:%S'),
+        'result_url': '{0}://{1}{2}'.format(
+            request.scheme,
+            request.get_host(),
+            request.get_full_path()
+        ),
+        'job_status': {
+            'P': 'Pending',
+            'R': 'Running',
+            'F': 'Finished',
+            'E': 'Error',
+        }[thejob.analysis_status],
+        'file_status': {
+            'K': 'Keeping',
+            'A': 'Archived',
+            'D': 'Deleted',
+        }[thejob.reserve_status],
+    }
     if thejob.analysis_status == 'F':
-        return render(
-            request, 'zfc/result.html',
-            {
-                'job_id': thejob.job_id,
-                'result_url': '{0}://{1}{2}'.format(
-                    request.scheme,
-                    request.get_host(),
-                    request.get_full_path()
-                ),
-                'job_status': {
-                    'P': 'Pending',
-                    'R': 'Running',
-                    'F': 'Finished',
-                    'E': 'Error',
-                }[thejob.analysis_status],
-                'file_status': {
-                    'K': 'Keeping',
-                    'A': 'Archived',
-                    'D': 'Deleted',
-                }[thejob.reserve_status],
-                'image_counts_boxplot': os.path.join(
-                    settings.MEDIA_URL,
-                    thejob.dir_path,
-                    'zfc_counts_boxplot.png'
-                ),
-                'image_lfc_normcount_scatter': os.path.join(
-                    settings.MEDIA_URL,
-                    thejob.dir_path,
-                    'zfc_lfc_normcount_scatter.png'
-                ),
-                'image_zlfc_normcount_scatter': os.path.join(
-                    settings.MEDIA_URL,
-                    thejob.dir_path,
-                    'zfc_zlfc_normcount_scatter.png'
-                ),
-                'image_sgrna_zlfc_rra_scatter': os.path.join(
-                    settings.MEDIA_URL,
-                    thejob.dir_path,
-                    'zfc_sgrna_zlfc_rra_scatter.png'
-                ),
-                'image_gene_zlfc_rra_scatter': os.path.join(
-                    settings.MEDIA_URL,
-                    thejob.dir_path,
-                    'zfc_gene_zlfc_rra_scatter.png'
-                ),
-            }
-        )
+        render_dict['downloadable'] = {
+            'K': True,
+            'A': False,
+            'D': False,
+        }[thejob.reserve_status]
+        if thejob.reserve_status == 'K':
+            render_dict['figure_list'] = [
+                {
+                    'fig_id': 'fig_counts_boxplot',
+                    'fig_label': 'Count Boxplot',
+                    'fig_name': 'Boxplot of raw counts and normalized counts',
+                    'fig_discription': '',
+                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_counts_boxplot.png'),
+                },
+                {
+                    'fig_id': 'fig_normcount_scatter',
+                    'fig_label': 'Norm Scatter',
+                    'fig_name': 'Scatter plot of normalized counts of control and experiment',
+                    'fig_discription': '',
+                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_normcount_scatter.png'),
+                },
+                {
+                    'fig_id': 'fig_lfc_normcount_scatter',
+                    'fig_label': 'LFC Norm Scatter',
+                    'fig_name': 'Scatter plot of LFC v.s. normalized counts',
+                    'fig_discription': '',
+                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_lfc_normcount_scatter.png'),
+                },
+                {
+                    'fig_id': 'fig_zlfc_normcount_scatter',
+                    'fig_label': 'ZLFC Norm Scatter',
+                    'fig_name': 'Scatter plot of ZLFC v.s. normalized counts',
+                    'fig_discription': '',
+                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_zlfc_normcount_scatter.png'),
+                },
+                {
+                    'fig_id': 'fig_sgrna_zlfc_rra_scatter',
+                    'fig_label': 'sgRNA Scatter',
+                    'fig_name': 'Scatter plot of sgRNA ZLFC and RRA score',
+                    'fig_discription': '',
+                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_sgrna_zlfc_rra_scatter.png'),
+                },
+                {
+                    'fig_id': 'fig_sgrna_zlfc_hist',
+                    'fig_label': 'sgRNA Histogram',
+                    'fig_name': 'Histogram of sgRNA ZLFC',
+                    'fig_discription': '',
+                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_sgrna_zlfc_hist.png'),
+                },
+                {
+                    'fig_id': 'fig_gene_zlfc_rra_scatter',
+                    'fig_label': 'Gene Scatter',
+                    'fig_name': 'Scatter plot of sgRNA ZLFC and RRA score',
+                    'fig_discription': '',
+                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_gene_zlfc_rra_scatter.png'),
+                },
+                {
+                    'fig_id': 'fig_gene_zlfc_hist',
+                    'fig_label': 'Gene Histogram',
+                    'fig_name': 'Histogram of gene ZLFC',
+                    'fig_discription': '',
+                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_gene_zlfc_hist.png'),
+                },
+            ]
+        elif thejob.reserve_status == 'A':
+            render_dict['job_archived'] = True
+        else:
+            render_dict['job_deleted'] = True
+    elif thejob.analysis_status == 'E':
+        render_dict['error_message'] = thejob.stderr
     else:
-        return render(
-            request, 'zfc/submitted.html',
-            {
-                'job_id': thejob.job_id,
-                'result_url': '{0}://{1}{2}'.format(
-                    request.scheme,
-                    request.get_host(),
-                    request.get_full_path()
-                ),
-                'date': time.strftime('%Y-%m-%d %H:%M:%S'),
-                'job_status': {
-                    'P': 'Pending',
-                    'R': 'Running',
-                    'F': 'Finished',
-                    'E': 'Error',
-                }[thejob.analysis_status],
-                'file_status': {
-                    'K': 'Keeping',
-                    'A': 'Archived',
-                    'D': 'Deleted',
-                }[thejob.reserve_status],
-                'error_message': thejob.stderr
-            }
-        )
+        render_dict['refresh_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
+    return render(
+        request, 'zfc/job.html', render_dict
+    )
 
 
 def download(request, job_id):

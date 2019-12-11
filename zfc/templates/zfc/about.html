@@ -1,4 +1,41 @@
 {% extends "zfc/basic.html" %}
 {% block content %}
-About page
+<div class="container">
+  <div class="m-1 p-3" style="position:relative; overflow:auto; height:800px;">
+
+    <!-- Logo -->
+    <div class="d-flex flex-row justify-content-center m-5 p-1">
+      <img src="/static/zfclogo.svg" height="128"  width="128" />
+      <div class="col-sm-4">
+        <h1>ZFC</h1>
+        <small class="text-muted">Algorithm to calculate the enrichment and depleted genes from CRISPR screening from Z score of log2 fold change.</small>
+      </div>
+    </div>
+
+    <hr/>
+
+    <!-- About -->
+    <h2>Software availability</h2>
+    <ul>
+      <li>ZFC software: <a
+                          href="https://github.com/wolfsonliu/zfc/releases">https://github.com/wolfsonliu/zfc/releases</a></li>
+      <li>ZFC web: <a
+                     href="https://github.com/wolfsonliu/zfc_web">https://github.com/wolfsonliu/zfc_web</a></li>
+    </ul>
+    <hr>
+
+    <h2>Citation</h2>
+    <p>Please cite us!</p>
+    <hr>
+
+    <h2>Acknowledgement</h2>
+    <p>Thanks for the funcings from PKU.</p>
+    <hr>
+
+    <h2>Maintainer</h2>
+    <p>Wolfson Liu</p>
+    <hr>
+
+  </div>
+</div>
 {% endblock %}

@@ -1,10 +1,10 @@
-#ZFC Web#
+# ZFC Web #
 
 ZFC Web is a Django app to conduct Web-based interface for CRISPR screening analysis algorithm [ZFC](https://github.com/wolfsonliu/zfc/).
 
-##Quick start##
+## Quick start ##
 
-1. Add "zfc" to your INSTALLED_APPS setting like this::
+1. Add "zfc" to your INSTALLED\_APPS setting like this::
 
 ```
 INSTALLED_APPS = [

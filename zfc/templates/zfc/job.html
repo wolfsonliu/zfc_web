@@ -1,0 +1,191 @@
+{% extends "zfc/basic.html" %}
+{% block content %}
+
+<div class="container-fluid row">
+
+  <!-- Job info -->
+  <div class="col-md-3 m-1 p-3">
+    <div class="position-sticky">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+          <h5>Job ID:</h5>
+          <p style="overflow:auto;">{{ job_id }}</p>
+        </li>
+        <li class="list-group-item">
+          <h5>Job page:</h5>
+          <p style="overflow:auto;"><a href="{{ result_url }}">{{ result_url }}</a></p>
+        </li>
+        <li class="list-group-item">
+          <h5>Job Status:</h5>
+          <p style="overflow:auto;">{{ job_status }}</p>
+        </li>
+        <li class="list-group-item">
+          <h5>Submission Time:</h5>
+          <p style="overflow:auto;">{{ submit_date }}</p>
+        </li>
+        <li class="list-group-item">
+          <h5>File Status:</h5>
+          <p style="overflow:auto;">{{ file_status }}</p>
+        </li>
+        {% if downloadable %}
+        <li class="list-group-item">
+          <h5>Output Files:</h5>
+          <form action="{% url 'zfc:download' job_id %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary" id="output_zip">
+              <i class="fas fa-download mr-2"></i>Download
+            </button>
+          </form>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
+
+  <!-- Content -->
+  <div class="col m-1 p-3">
+
+    {% if refresh_time %}
+    <!-- Auto refresh page -->
+    <script>
+      window.setTimeout(
+      function () {
+      location.href = "{{ result_url }}";
+      },
+      60000
+      ); // refresh/redirect after 60 seconds.
+    </script>
+    <div class="d-flex">
+      <img src="/static/zfclogo.svg" height="48"  width="48"/>
+      <h1 class="px-2">
+        Job {{job_status }}
+      </h1>
+      {% if job_status == 'Pending' %}
+      <div class="spinner-border text-info p-3" role="status">
+        <h1 class="sr-only">.</h1>
+      </div>
+      {% else %}
+      <div class="spinner-border text-success p-3" role="status">
+        <h1 class="sr-only" height="48" width="48">.</h1>
+      </div>
+      {% endif %}
+    </div>
+    <hr/>
+    <p>This page will be automatically refreshed every 60 seconds.</p>
+    <p>Last refreshed Time: {{ refresh_time }}</p>
+
+    {% elif error_message %}
+
+    <div class="alert alert-danger" role="alert">
+      <div class="d-flex">
+        <img src="/static/zfclogo.svg" height="48"  width="48"/>
+        <h1 class="px-2">Job Error</h1>
+      </div>
+      <hr/>
+      {{ error_message }}
+    </div>
+
+    {% elif job_archived %}
+    <div class="d-flex">
+      <img src="/static/zfclogo.svg" height="48"  width="48"/>
+      <h1 class="px-2">Job Archived</h1>
+    </div>
+    <hr/>
+    <p class="p-3">
+      It has been a while after the job finished.
+    </p>
+    <p class="p-3">
+      This job has been
+      archived to save resource.
+    </p>
+    <p class="p-3">
+      If you still want the analysis
+      result, please contact the maintainer for analysis results or
+      resubmit a job.
+    </p>
+
+    {% elif job_deleted %}
+    <div class="d-flex">
+      <img src="/static/zfclogo.svg" height="48"  width="48"/>
+      <h1 class="px-2">Job Deleted</h1>
+    </div>
+    <hr/>
+    <p class="p-3">
+      How time flies! It has been a long time passed.
+    </p>
+    <p class="p-3">
+      The job had been deleted to save resource.
+    </p>
+    <p class="p-3">
+      You have to resubmit the job if you still want the results.
+    </p>
+
+    {% elif figure_list %}
+    <div class="row p-3" style="position:relative; overflow:auto; height:800px;">
+      <div class="col-sm-2">
+        <!-- Nav pane -->
+        <div class="position-sticky">
+          <a class="navbar-brand">
+            <div class="d-flex">
+              <img src="/static/zfclogo.svg" height="48"  width="48"/>
+              <h1 class="px-2">Figures</h1>
+            </div>
+          </a>
+          <hr/>
+          <ul class="nav nav-pills nav-stacked flex-column">
+            {% for fig in figure_list %}
+            <li class="nav-item">
+              {% if forloop.counter == 1 %}
+              <a href="#{{ fig.fig_id }}" data-toggle="pill" class="nav-link active">
+                {{ fig.fig_label }}
+              </a>
+              {% else %}
+              <a href="#{{ fig.fig_id }}" data-toggle="pill" class="nav-link">
+                {{ fig.fig_label }}
+              </a>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="col-sm-9">
+        <!-- Tab pane -->
+        <div class="tab-content">
+          {% for fig in figure_list %}
+          {% if forloop.counter == 1 %}
+          <div id="{{ fig.fig_id }}" class="tab-pane fade show active">
+            <div class="card my-3">
+              <img class="card-img-top" src="{{ fig.fig_url }}" width="650px" height="650px" style="object-fit: contain;"/>
+              <div class="card-body">
+                <h5 class="card-title">{{ fig.fig_name }}</h5>
+                <p class="card-text">
+                  {{ fig.fig_description }}
+                </p>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div id="{{ fig.fig_id }}" class="tab-pane fade show">
+            <div class="card my-3">
+              <img class="card-img-top" src="{{ fig.fig_url }}" width="650px" height="650px" style="object-fit: contain;"/>
+              <div class="card-body">
+                <h5 class="card-title">{{ fig.fig_name }}</h5>
+                <p class="card-text">
+                  {{ fig.fig_description }}
+                </p>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock content %}

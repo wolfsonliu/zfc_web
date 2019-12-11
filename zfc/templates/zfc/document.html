@@ -1,4 +1,349 @@
 {% extends "zfc/basic.html" %}
 {% block content %}
-Document page
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<div class="container-fluid row">
+
+<div class="col-md-3 col-xl-2 bd-sidebar m-1 p-3">
+<div class="position-fixed">
+<nav id="nav-doc" class="navbar navbar-light">
+  <div clas="flex-column">
+    <a class="navbar-brand" href="#">
+      <div class="d-flex">
+        <img src="/static/zfclogo.svg" height="48"  width="48"/><h1 class="px-2">ZFC</h1>
+      </div>
+    </a>
+    <nav class="nav nav-pills flex-column">
+      <a class="nav-link" href="#h2-zfc-software">ZFC Software</a>
+      <nav class="nav nav-pills flex-column">
+        <a class="nav-link ml-3 my-1" href="#h2-zfc-software-h3-dependency">Dependency</a>
+        <a class="nav-link ml-3 my-1" href="#h2-zfc-software-h3-installation">Installation</a>
+        <a class="nav-link ml-3 my-1" href="#h2-zfc-software-h3-usage">Usage</a>
+      </nav>
+      <a class="nav-link" href="#h2-algorithm">Algorithm</a>
+    </nav>
+  </div>
+</nav>
+</div>
+</div>
+
+<!-- Document -->
+<div class="col-md-9 col-xl-8 bd-content">
+<div data-spy="scroll" data-target="#nav-doc" data-offset="0" class="m-1 p-3" style="position:relative; overflow:auto; height:800px;">
+
+<h1>ZFC</h1>
+<br/>
+<hr/>
+
+<p class="p-1">
+The ZFC analysis algorithm adopts the Z score of log<sub>2</sub> fold change as
+the judgement of the sgRNA and gene changes between reference group
+(without treatment) and experiment group (with treatment). ZFC
+supports screening with <a
+href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1628-0">iBAR</a>
+employed, as well as conventional screening with replicates. The sgRNA
+with replicates and sgRNA<sup>iBAR</sup> is treated with similar
+procedure.
+</p>
+
+<hr/>
+<br/>
+
+<h2 id="h2-zfc-software">ZFC software</h2>
+<br/>
+
+<p class="p-1">
+ZFC is a software to calculate fold change zscore of screening
+data.  ZFC can used for CRISPR library screening with or without <a
+href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1628-0">iBAR</a>,
+with or without replicates.
+</p>
+
+<p class="p-1">
+The software can be downloaded from <a
+href="https://github.com/wolfsonliu/zfc/releases">ZFC Github
+repository</a>.
+</p>
+
+<h3 id="h2-zfc-software-h3-dependency">Dependency</h3>
+
+<p class="p-1">
+ZFC is designed with python3 and requires packages that are available
+in Linux, Mac OS, and Windows.
+</p>
+
+<ul>
+<li><a href="https://www.python.org">Python3.x</a></li>
+<li><a href="https://numpy.org/">numpy</a> >= 1.10</li>
+<li><a href="https://www.scipy.org">scipy</a> >= 1.0</li>
+<li><a href="https://pandas.pydata.org/">pandas</a> >= 0.16</li>
+<li><a href="https://matplotlib.org">matplotlib</a> >= 2.0</li>
+<li><a href="https://scikit-learn.org/stable/index.html">sklearn</a> >= 0.20</li>
+</ul>
+
+<h3 id="h2-zfc-software-h3-installation">Installation</h3>
+
+<p class="p-1">
+Clone this repository, then install the software.
+</p>
+
+<pre>
+<code class="language-bash">
+  git clone https://github.com/wolfsonliu/zfc.git
+  cd zfc
+  python3 setup.py install
+</code>
+</pre>
+
+<p class="p-1">
+It's advised to use <a
+href="https://virtualenv.pypa.io/en/stable/">virtualenv</a> or other
+software to create virual environment for the ZFC software.
+</p>
+
+<h3 id="h2-zfc-software-h3-usage">Usage</h3>
+
+<p class="p-1">The help of ZFC software:</p>
+
+<pre>
+<code>
+usage: zfc [-h] [-i INPUT] [-o OUTPREFIX] [--punish-rate PUNISH_RATE]
+           [--n-sd N_SD] [--null-iteration NULL_ITERATION] [--plot]
+           [--version]
+
+Calculate fold change of screening data (zscore log2 fold change).
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Raw count table with header should include: <gene>,
+                        <guide>, <barcode>, <ctrl>, <exp>.<ctrl> is the raw
+                        counts of control group, <exp> is the raw counts of
+                        treatment group. For screening without barcode, the
+                        barcode column can be the same with guide.
+  -o OUTPREFIX, --outprefix OUTPREFIX
+                        Output file prefix, can be the file directory path
+                        with file name prefix. The directory in the outprefix
+                        should be built before analysis.
+  --top-n-sgrna TOP_N_SGRNA
+                        Only consider top n barcodes for each sgRNA. Default
+                        to use all the data.
+  --top-n-gene TOP_N_GENE
+                        Only consider top n barcodes for each gene. Default to
+                        use all the data.
+  --null-iteration NULL_ITERATION
+                        The iteration to generate null distribution in
+                        calculating the p value of genes. The larger the
+                        better, but slower in calculation, default to be 100.
+  --plot                Output figures.
+  --version             show program's version number and exit
+</code>
+</pre>
+
+<hr/>
+<br/>
+
+<h2 id="h2-algorithm">Algorithm</h2>
+<br/>
+
+<div class="accordion" id="algorithmDoc">
+  <div class="card">
+    <div class="card-header" id="heading1">
+      <div class="d-flex justify-content-start" data-toggle="collapse" data-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+        <img class="col-sm-2" src="/static/alg_1.svg" />
+        <h3 class="col">1 Normalization of raw counts</h3>
+      </div>
+    </div>
+    <div id="collapse1" class="collapse hide" aria-labelledby="heading1" data-parent="#algorithmDoc">
+      <div class="card-body">
+      <p class="p-4">
+      We use total counts for the normalization of raw counts, to
+      rectify the batch sequencing deptch. Because some sgRNAs in the
+      reference have very low raw counts, which can affect the fold
+      change calculation of the following analysis. We define sgRNAs
+      counts less than 0.05 quantile both in reference group and
+      experiment group as the small count sgRNAs. The mean counts of
+      all the small count sgNRAs were added to the normalized
+      counts. The normalized counts for sgRNAs in reference group are
+      calculated as following expression:
+
+      $$Cn_{i} = \frac{Cr_{i}}{S_{ref}} \times 0.5 \times (S_{ref} + S_{exp})$$
+
+      $$C_{i} = Cn_{i} + Cm_{small}$$
+
+      where, Cn<sub>i</sub> is the normalized count of ith
+      sgRNA<sup>iBAR</sup> in reference group, Cr<sub>i</sub> is the
+      raw count of ith sgRNA<sup>iBAR</sup>, Cm<sub>small</sub> is the
+      mean counts of all the small count sgRNAs, S<sub>ref</sub> is
+      the sum of raw counts of all the sgRNA<sup>iBAR</sup> in
+      reference group, S<sub>exp</sub> is the sum of raw counts of all
+      the sgRNA<sup>iBAR</sup> in experiment group, C<sub>i</sub> is
+      the final normalized counts for ith sgRNA<sup>iBAR</sup> after
+      small count adjustment. The normalized counts for sgRNAs in
+      experiment group are calculated similarly.
+      </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" id="heading2">
+      <div class="d-flex justify-content-start" data-toggle="collapse" data-target="#collapse2" aria-expanded="true" aria-controls="collapse2">
+        <img class="col-sm-2" src="/static/alg_2.svg" />
+        <h3 class="col">2 Calculate fold change</h3>
+      </div>
+    </div>
+    <div id="collapse2" class="collapse hide" aria-labelledby="heading2" data-parent="#algorithmDoc">
+      <div class="card-body">
+      <p class="p-4">
+
+      The raw fold change of each sgRNA<sup>iBAR</sup> is calculated from
+      the normalized counts of reference and experiment groups.
+
+      $$fc_{i} = \frac{Cexp_{i}}{Cref_{i}}$$
+      $$lfc_{i} = \log_{2}fc_{i}$$
+
+      where, fc<sub>i</sub> is the fold change (FC) of ith
+      sgRNA<sup>iBAR</sup> and lfc<sub>i</sub> is the log<sub>2</sub>
+      fold change (LFC) of ith sgRNA<sup>iBAR</sup>, Cref<sub>i</sub>
+      and Cexp<sub>i</sub> are the normalized counts of reference and
+      experiment groups respectively.
+
+      </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" id="heading3">
+      <div class="d-flex justify-content-start" data-toggle="collapse" data-target="#collapse3" aria-expanded="true" aria-controls="collapse3">
+        <img class="col-sm-2" src="/static/alg_3.svg" />
+        <h3 class="col">3 Calculate fold change standard deviation</h3>
+      </div>
+    </div>
+    <div id="collapse3" class="collapse hide" aria-labelledby="heading3" data-parent="#algorithmDoc">
+      <div class="card-body">
+      <p class="p-4">
+
+      In order to calculate z-score of LFC (ZLFC), the standard
+      deviation of LFC should be calculated. The LFC of
+      sgRNA<sup>iBAR</sup> is related to the normalized counts of
+      reference group. So the standard deviations of LFC are different
+      for sgRNA<sup>iBAR</sup>s with different normalized counts of
+      reference group. All the sgRNA<sup>iBAR</sup>s are divided into
+      several sets according to the normalized counts of reference
+      group. And the standard deviations of log fold change are
+      calculated among the divided sets. The LFC standard diviation
+      and the normalized counts of the reference is linearly
+      related. So, a linear model is calculated for the LFC sd and
+      reference counts. And the linear model is used to calculate the
+      LFC standard diviation for all the sgRNA<sup>iBAR</sup>s.
+
+      </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" id="heading4">
+      <div class="d-flex justify-content-start" data-toggle="collapse" data-target="#collapse4" aria-expanded="true" aria-controls="collapse4">
+        <img class="col-sm-2" src="/static/alg_4.svg" />
+        <h3 class="col">4 Z score of log<sub>2</sub> fold change</h3>
+      </div>
+    </div>
+    <div id="collapse4" class="collapse hide" aria-labelledby="heading4" data-parent="#algorithmDoc">
+      <div class="card-body">
+      <p class="p-4">
+
+      The raw z score of log fold change is calculated.
+
+      $$raw ZLFC = \frac{LFC}{LFC std}$$
+
+      sgRNA<sup>iBAR</sup> ZLFC p values are calculated from normal
+      distribution.
+
+      </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" id="heading5">
+      <div class="d-flex justify-content-start" data-toggle="collapse" data-target="#collapse5" aria-expanded="true" aria-controls="collapse5">
+        <img class="col-sm-2" src="/static/alg_5.svg" />
+        <h3 class="col">5 Calculate sgRNA mean z score of fold change</h3>
+      </div>
+    </div>
+    <div id="collapse5" class="collapse hide" aria-labelledby="heading5" data-parent="#algorithmDoc">
+      <div class="card-body">
+      <p class="p-4">
+
+      The sgRNA level ZLFCs are calculated as the mean of all the ZLFCs of
+      the relevant sgRNA<sup>iBAR</sup>s.
+
+      $$ZLFC_{sgRNA} = \frac{\sum{ZLFC_{sgRNA-iBAR}}}{n}$$
+
+      where, the sgRNA has n sgRNA<sup>iBAR</sup>s. Empirical P value
+      is also calculated for the sgRNA ZLFCs. The p value is adjusted
+      considering control of False Discovery Rate.
+
+      </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" id="heading6">
+      <div class="d-flex justify-content-start" data-toggle="collapse" data-target="#collapse6" aria-expanded="true" aria-controls="collapse6">
+        <img class="col-sm-2" src="/static/alg_6.svg" />
+        <h3 class="col">6 Calculate gene mean z score of fold change</h3>
+      </div>
+    </div>
+    <div id="collapse6" class="collapse hide" aria-labelledby="heading6" data-parent="#algorithmDoc">
+      <div class="card-body">
+      <p class="p-4">
+
+      The gene level ZLFCs are calculated as the mean of all the ZLFCs
+      of the relevant sgRNAs.
+
+      $$ZLFC_{gene} = \frac{\sum{ZLFC_{sgRNA}}}{m}$$
+
+      where, the gene has m sgRNAs. Empirical P value is also
+      calculated for the gene ZLFCs. The p value is adjusted
+      considering control of False Discovery Rate.
+
+      </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" id="heading7">
+      <div class="d-flex justify-content-start" data-toggle="collapse" data-target="#collapse7" aria-expanded="true" aria-controls="collapse7">
+        <img class="col-sm-2" src="/static/alg_7.svg" />
+        <h3 class="col">7 Robust rank aggregation analysis</h3>
+      </div>
+    </div>
+    <div id="collapse7" class="collapse hide" aria-labelledby="heading7" data-parent="#algorithmDoc">
+      <div class="card-body">
+      <p class="p-4">
+
+      Robust rank aggregation is utilized to calculate the rank
+      significance of the sgRNA and gene with the sgRNA<sup>iBAR</sup>
+      in the whole library. Aside from robust rank aggregation, mean
+      rank aggregation is also calculated. The robust rank score is
+      adjusted considering control of False Discovery Rate.
+
+      </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+</div>
 {% endblock %}
