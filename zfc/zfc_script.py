@@ -1,10 +1,11 @@
 import io
 
 
-def make_job_script(top_n_sgrna=None, top_n_gene=None):
+def make_job_script(normalization='total', top_n_sgrna=None, top_n_gene=None):
     parameter = dict()
     parameter['input'] = '-i zfc_raw_count.txt'
     parameter['output'] = '-o zfc'
+    parameter['normalization'] = '--normalization {0}'.format(normalization)
     if top_n_sgrna is None:
         parameter['top_n_sgrna'] = ''
     else:
@@ -14,8 +15,9 @@ def make_job_script(top_n_sgrna=None, top_n_gene=None):
         parameter['top_n_gene'] = ''
     else:
         parameter['top_n_gene'] = '--top-n-sgrna {0}'.format(top_n_sgrna)
-    script = 'zfc --plot {0} {1} {2} {3}'.format(
+    script = 'zfc --plot {0} {1} {2} {3} {4}'.format(
         parameter['input'], parameter['output'],
+        parameter['normalization'],
         parameter['top_n_sgrna'], parameter['top_n_gene']
     )
     return io.StringIO(

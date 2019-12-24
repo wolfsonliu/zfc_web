@@ -64,6 +64,7 @@ def job(request, job_id):
         jobfs.save(thejob.file_raw_count, request.FILES['count_file'])
         # Prepare job
         job_args = dict()
+        job_args['normalization'] = request.POST['normalization']
         if request.POST['top_n_sgrna'] == '':
             job_args['top_n_sgrna'] = None
         else:
@@ -75,6 +76,7 @@ def job(request, job_id):
         jobfs.save(
             'run_zfc.sh',
             zfc_script.make_job_script(
+                normalization=job_args['normalization'],
                 top_n_sgrna=job_args['top_n_sgrna'],
                 top_n_gene=job_args['top_n_gene']
             )
@@ -122,57 +124,111 @@ def job(request, job_id):
                     'fig_id': 'fig_counts_boxplot',
                     'fig_label': 'Count Boxplot',
                     'fig_name': 'Boxplot of raw counts and normalized counts',
-                    'fig_discription': '',
-                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_counts_boxplot.png'),
+                    'fig_description': 'The raw counts are normalized before analysis.',
+                    'fig_url': os.path.join(
+                        settings.MEDIA_URL,
+                        thejob.dir_path,
+                        'zfc_counts_boxplot.png'
+                    ),
+                },
+                {
+                    'fig_id': 'fig_lorenz',
+                    'fig_label': 'Lorenz Curve',
+                    'fig_name': 'Lorenz Curve of raw counts',
+                    'fig_description': 'Lorenz curve is used to inspect the over-representaion. The Gini index should be between 0.2 and 0.35 for a control distribution or negative screening, but higher for positive screening.',
+                    'fig_url': os.path.join(
+                        settings.MEDIA_URL,
+                        thejob.dir_path,
+                        'zfc_lorenz.png'
+                    ),
                 },
                 {
                     'fig_id': 'fig_normcount_scatter',
                     'fig_label': 'Norm Scatter',
                     'fig_name': 'Scatter plot of normalized counts of control and experiment',
-                    'fig_discription': '',
-                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_normcount_scatter.png'),
+                    'fig_description': 'The scatter of normalized counts from ctrl and experiment groups illustrats the raw screening results as the dots deviated from the diagonal.',
+                    'fig_url': os.path.join(
+                        settings.MEDIA_URL,
+                        thejob.dir_path,
+                        'zfc_normcount_scatter.png'
+                    ),
                 },
                 {
                     'fig_id': 'fig_lfc_normcount_scatter',
                     'fig_label': 'LFC Norm Scatter',
                     'fig_name': 'Scatter plot of LFC v.s. normalized counts',
-                    'fig_discription': '',
-                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_lfc_normcount_scatter.png'),
+                    'fig_description': 'LFC and normalized count relationship before adjustment.',
+                    'fig_url': os.path.join(
+                        settings.MEDIA_URL,
+                        thejob.dir_path,
+                        'zfc_lfc_normcount_scatter.png'
+                    ),
+                },
+                {
+                    'fig_id': 'fig_lfcstd_ctrlmean',
+                    'fig_label': 'LFC sd and Ctrl model',
+                    'fig_name': 'Scatter plot of LFC sd v.s. normalized Ctrl count used for the model',
+                    'fig_description': 'Linear model used to adjust the LFC sd by the ctrl normalized count',
+                    'fig_url': os.path.join(
+                        settings.MEDIA_URL,
+                        thejob.dir_path,
+                        'zfc_lfcstd_ctrlmean.png'
+                    ),
                 },
                 {
                     'fig_id': 'fig_zlfc_normcount_scatter',
                     'fig_label': 'ZLFC Norm Scatter',
                     'fig_name': 'Scatter plot of ZLFC v.s. normalized counts',
-                    'fig_discription': '',
-                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_zlfc_normcount_scatter.png'),
+                    'fig_description': 'ZLFC and normalized count relationship after adjustment.',
+                    'fig_url': os.path.join(
+                        settings.MEDIA_URL,
+                        thejob.dir_path,
+                        'zfc_zlfc_normcount_scatter.png'
+                    ),
                 },
                 {
                     'fig_id': 'fig_sgrna_zlfc_rra_scatter',
                     'fig_label': 'sgRNA Scatter',
                     'fig_name': 'Scatter plot of sgRNA ZLFC and RRA score',
-                    'fig_discription': '',
-                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_sgrna_zlfc_rra_scatter.png'),
+                    'fig_description': 'sgRNA level screening result.',
+                    'fig_url': os.path.join(
+                        settings.MEDIA_URL,
+                        thejob.dir_path,
+                        'zfc_sgrna_zlfc_rra_scatter.png'
+                    ),
                 },
                 {
                     'fig_id': 'fig_sgrna_zlfc_hist',
                     'fig_label': 'sgRNA Histogram',
                     'fig_name': 'Histogram of sgRNA ZLFC',
-                    'fig_discription': '',
-                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_sgrna_zlfc_hist.png'),
+                    'fig_description': 'Distribution of sgRNA level ZLFC, which should be approximately normal distributed',
+                    'fig_url': os.path.join(
+                        settings.MEDIA_URL,
+                        thejob.dir_path,
+                        'zfc_sgrna_zlfc_hist.png'
+                    ),
                 },
                 {
                     'fig_id': 'fig_gene_zlfc_rra_scatter',
                     'fig_label': 'Gene Scatter',
                     'fig_name': 'Scatter plot of sgRNA ZLFC and RRA score',
-                    'fig_discription': '',
-                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_gene_zlfc_rra_scatter.png'),
+                    'fig_description': 'Gene level screening result.',
+                    'fig_url': os.path.join(
+                        settings.MEDIA_URL,
+                        thejob.dir_path,
+                        'zfc_gene_zlfc_rra_scatter.png'
+                    ),
                 },
                 {
                     'fig_id': 'fig_gene_zlfc_hist',
                     'fig_label': 'Gene Histogram',
                     'fig_name': 'Histogram of gene ZLFC',
-                    'fig_discription': '',
-                    'fig_url': os.path.join(settings.MEDIA_URL, thejob.dir_path, 'zfc_gene_zlfc_hist.png'),
+                    'fig_description': 'Distribution of gene level ZLFC, which should be approximately normal distributed',
+                    'fig_url': os.path.join(
+                        settings.MEDIA_URL,
+                        thejob.dir_path,
+                        'zfc_gene_zlfc_hist.png'
+                    ),
                 },
             ]
         elif thejob.reserve_status == 'A':
